@@ -1,0 +1,676 @@
+MuseOS — EVERYTHING DONE SO FAR
+
+1. PROJECT IDEA
+
+Project name:
+MuseOS
+
+Full title:
+MuseOS — Integrated DBMS & Operating Systems Project
+
+The project combines DBMS + Operating Systems into one C++ application.
+
+The application uses a music library as the practical domain.
+
+Important idea:
+Music is the application domain. The project itself demonstrates DBMS and OS concepts.
+
+We are NOT building an actual operating system. We are building an application that simulates OS concepts while using a real database.
+
+
+2. WHAT MUSEOS WILL EVENTUALLY DO
+
+The project will have two major components:
+
+                         MUSEOS
+                           |
+              +------------+------------+
+              |                         |
+             DBMS                       OS
+              |                         |
+        Music Database             OS Simulation
+              |                         |
+     +--------+--------+       +-------+--------+
+     |                 |       |                |
+   Songs            Playlists  Processes     Memory
+   Albums           History    Scheduling     Deadlocks
+   Artists          Genres     Resources      Files
+
+DBMS side:
+- Artists
+- Albums
+- Songs
+- Genres
+- Playlists
+- Playlist songs
+- Listening history
+
+OS side:
+- Process management
+- CPU scheduling
+- FCFS
+- SJF
+- Round Robin
+- Memory allocation
+- First Fit
+- Best Fit
+- Worst Fit
+- Fragmentation
+- Deadlock detection
+- Resource management
+- File-system concepts
+
+
+3. TECHNOLOGY STACK
+
+Technology              Purpose
+------------------------------------------------
+C++                     Main application
+SQLite                  Database
+SQL                     Database operations
+VS Code                 Development
+GCC / MinGW             C++ compiler
+Git                     Version control
+GitHub                  Project hosting
+
+GitHub is currently paused because of a credential-manager issue. The project itself is continuing locally.
+
+
+4. PROJECT FOLDER
+
+Project location:
+
+D:\PBL DBMS & OS\Museos
+
+Folders/files created:
+
+Museos/
+|
++-- src/
++-- database/
++-- docs/
++-- README.md
+
+Eventually the structure will become something closer to:
+
+Museos/
+|
++-- src/
+|   +-- main.cpp
+|   +-- database/
+|   +-- os/
+|   +-- ...
+|
++-- database/
+|   +-- museos.db
+|
++-- docs/
+|
++-- README.md
++-- ...
+
+We have not built all of that yet.
+
+
+5. GIT SETUP
+
+Git for Windows was installed.
+
+Version:
+Git 2.55.0.windows.5
+
+Git was configured with:
+
+git config --global user.name "Manik Singh Mehra"
+
+git config --global user.email "maniksinghmehra@gmail.com"
+
+VS Code was also configured as the Git editor.
+
+Git repository:
+
+Inside the project folder we ran:
+
+git init
+
+Then created:
+
+README.md
+
+and committed it:
+
+git add README.md
+git commit -m "Initial commit"
+
+The branch was renamed toward:
+
+main
+
+
+GITHUB
+
+A GitHub repository called MuseOS was created.
+
+Repository:
+https://github.com/maniksinghmehra/MuseOS
+
+The remote was added:
+
+git remote add origin https://github.com/maniksinghmehra/MuseOS.git
+
+The push failed because Git Credential Manager produced:
+
+git-credential-manager.exe - System Error
+The string binding is invalid.
+
+This was determined to be a Git Credential Manager problem, not a MuseOS repository problem.
+
+GitHub setup was paused so we could focus on building the actual project.
+
+
+6. C++ SETUP
+
+VS Code was installed.
+
+The Microsoft C/C++ extension was installed.
+
+Initially:
+
+g++ --version
+
+did not work in PowerShell.
+
+MSYS2 was installed.
+
+MSYS2 was updated with:
+
+pacman -Syu
+
+Then the UCRT64 GCC toolchain was installed:
+
+pacman -S --needed mingw-w64-ucrt-x86_64-gcc
+
+The compiler now works.
+
+Current compiler:
+GCC 16.2.0
+
+The following path was added to Windows PATH:
+
+C:\msys64\ucrt64\bin
+
+After restarting VS Code:
+
+g++ --version
+
+works directly inside VS Code.
+
+
+7. FIRST C++ PROGRAM
+
+Created:
+
+src/main.cpp
+
+Contents:
+
+#include <iostream>
+
+int main() {
+    std::cout << "MuseOS is starting..." << std::endl;
+
+    return 0;
+}
+
+Compiled with:
+
+g++ src/main.cpp -o MuseOS.exe
+
+Ran with:
+
+.\MuseOS.exe
+
+Output:
+
+MuseOS is starting...
+
+This confirmed:
+- C++ works
+- GCC works
+- VS Code works
+- PATH is correct
+- The project can compile and execute
+
+
+8. SQLITE SETUP
+
+Downloaded the official SQLite command-line tools:
+
+sqlite-tools-win-x64-3530400.zip
+
+Extracted them to:
+
+C:\sqlite
+
+SQLite executable:
+
+C:\sqlite\sqlite3.exe
+
+Added C:\sqlite to Windows PATH.
+
+Current SQLite version:
+
+3.53.4
+
+
+9. CREATING THE DATABASE
+
+Inside the project folder, SQLite was started with:
+
+sqlite3 database/museos.db
+
+This created:
+
+database/museos.db
+
+This is the actual MuseOS database.
+
+
+10. IMPORTANT SQLITE TERMINAL LESSON
+
+Inside SQLite:
+
+sqlite>
+
+means we are inside SQLite and SQLite is waiting for an SQL command.
+
+If the prompt becomes:
+
+...>
+
+SQLite thinks the previous command is not finished.
+
+This usually happens because:
+- a semicolon is missing
+- a quote was not closed
+- parentheses were not closed
+
+To cancel an unfinished command:
+
+Ctrl + C
+
+Then we return to:
+
+sqlite>
+
+
+11. IMPORTANT DATABASE FILE LESSON
+
+database/museos.db was accidentally opened directly in VS Code.
+
+It showed unreadable/binary-looking characters.
+
+This is normal.
+
+.db is a binary database file, not a text file.
+
+Do NOT edit museos.db directly in VS Code.
+
+Instead, interact with it through SQLite:
+
+sqlite3 database/museos.db
+
+and SQL commands.
+
+
+12. ARTISTS TABLE
+
+Created:
+
+CREATE TABLE Artists (
+    artist_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+Artists currently added:
+
+1 | Frank Ocean
+2 | Radiohead
+3 | Daft Punk
+4 | Kendrick Lamar
+
+Verification command:
+
+SELECT * FROM Artists;
+
+Expected/current data:
+
+1|Frank Ocean
+2|Radiohead
+3|Daft Punk
+4|Kendrick Lamar
+
+
+13. ALBUMS TABLE
+
+Created:
+
+CREATE TABLE Albums (
+    album_id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    artist_id INTEGER NOT NULL,
+    FOREIGN KEY (artist_id) REFERENCES Artists(artist_id)
+);
+
+Relationship:
+
+Artists
+   |
+   | artist_id
+   v
+Albums
+
+Every album is associated with an artist.
+
+
+14. FIRST ALBUM
+
+Inserted:
+
+INSERT INTO Albums (title, artist_id)
+VALUES ('Blonde', 1);
+
+artist_id = 1 is Frank Ocean.
+
+So the database represents:
+
+Frank Ocean
+    |
+    +-- Blonde
+
+
+15. SONGS TABLE
+
+Created:
+
+CREATE TABLE Songs (
+    song_id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    duration INTEGER,
+    album_id INTEGER NOT NULL,
+    FOREIGN KEY (album_id) REFERENCES Albums(album_id)
+);
+
+Relationship:
+
+Artist
+   |
+   v
+Album
+   |
+   v
+Song
+
+Example:
+
+Frank Ocean
+    |
+    +-- Blonde
+          |
+          +-- Nikes
+
+
+16. FIRST SONG
+
+Attempted/added:
+
+INSERT INTO Songs (title, duration, album_id)
+VALUES ('Nikes', 314, 1);
+
+Meaning:
+
+title = Nikes
+duration = 314 seconds
+album_id = 1
+
+The intended relationship is:
+
+Frank Ocean
+    |
+    +-- Blonde
+          |
+          +-- Nikes
+
+Verification command:
+
+SELECT * FROM Songs;
+
+IMPORTANT:
+Nikes has now been verified. SELECT * FROM Songs returns:
+
+1|Nikes|314|1
+
+
+17. GENRES TABLES
+
+Created:
+
+CREATE TABLE Genres (
+    genre_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE SongGenres (
+    song_id INTEGER NOT NULL,
+    genre_id INTEGER NOT NULL,
+    PRIMARY KEY (song_id, genre_id),
+    FOREIGN KEY (song_id) REFERENCES Songs(song_id),
+    FOREIGN KEY (genre_id) REFERENCES Genres(genre_id)
+);
+
+Relationship:
+
+Songs <---- SongGenres ----> Genres
+             many-to-many
+
+A song can have many genres, and a genre can contain many songs.
+SongGenres is the junction/link table between them.
+
+Genres currently added:
+
+1 | Alternative R&B
+2 | Hip Hop
+3 | Rock
+4 | Electronic
+5 | Pop
+
+SongGenres currently added:
+
+song_id | genre_id
+1       | 1
+1       | 2
+
+Meaning: Nikes is tagged as Alternative R&B and Hip Hop.
+
+Verification command (JOIN):
+
+SELECT s.title, g.name FROM Songs s
+JOIN SongGenres sg ON s.song_id = sg.song_id
+JOIN Genres g ON g.genre_id = sg.genre_id;
+
+Output:
+
+Nikes|Alternative R&B
+Nikes|Hip Hop
+
+
+18. CURRENT DATABASE STRUCTURE
+
+Current foundation:
+
+Artists
+----------------
+artist_id
+name
+
+      |
+      | 1-to-many
+      v
+
+Albums
+----------------
+album_id
+title
+artist_id
+
+      |
+      | 1-to-many
+      v
+
+Songs
+----------------
+song_id
+title
+duration
+album_id
+
+      |
+      | many-to-many (via SongGenres)
+      v
+
+Genres
+----------------
+genre_id
+name
+
+
+19. WHAT HAS NOT BEEN BUILT YET
+
+DBMS:
+
+- Playlists
+- PlaylistSongs
+- Listening history
+- More sample data
+- Search functionality
+- Sorting/filtering
+- CRUD operations
+- Constraints
+- Indexes
+- More complex SQL queries
+
+C++ Database Integration:
+
+We have not yet connected C++ to SQLite.
+
+Eventually:
+
+C++ Application
+       |
+       v
+    SQLite
+       |
+       v
+  museos.db
+
+The C++ program will eventually:
+- open the database
+- execute SQL
+- retrieve records
+- display results
+- insert data
+- update data
+- delete data
+
+
+20. OS PORTION — NOT BUILT YET
+
+The OS simulation is still ahead.
+
+Planned modules:
+
+OS Simulator
+|
++-- Process Management
+|
++-- CPU Scheduling
+|   +-- FCFS
+|   +-- SJF
+|   +-- Round Robin
+|
++-- Memory Management
+|   +-- First Fit
+|   +-- Best Fit
+|   +-- Worst Fit
+|
++-- Deadlock
+|   +-- Deadlock Detection
+|
++-- Resource Management
+|
++-- File System Simulation
+
+
+21. FINAL PLANNED ARCHITECTURE
+
+                         MuseOS
+                           |
+                     C++ Application
+                           |
+              +------------+------------+
+              |                         |
+          DBMS Module              OS Simulator
+              |                         |
+           SQLite                 Process Manager
+              |                    CPU Scheduler
+              |                    Memory Manager
+              |                    Deadlock
+              |                    File System
+              |                         |
+              +------------+------------+
+                           |
+                       User Interface
+
+
+22. PROJECT DEVELOPMENT ORDER
+
+1. Finish database structure       <- CURRENT STAGE
+2. Add realistic sample data
+3. Learn/use SQL queries
+4. Connect SQLite to C++
+5. Build the C++ application
+6. Add OS process simulation
+7. Add CPU scheduling
+8. Add memory management
+9. Add deadlock simulation
+10. Integrate everything
+11. Clean up project
+12. Documentation/report
+13. GitHub
+
+
+23. CURRENT STATUS
+
+C++ compiler       [DONE]
+VS Code            [DONE]
+SQLite             [DONE]
+Project folders    [DONE]
+Git                [DONE]
+GitHub             [PAUSED]
+
+Artists table      [DONE]
+Albums table       [DONE]
+Songs table        [DONE]
+Nikes              [DONE]
+Genres table       [DONE]
+SongGenres table   [DONE]
+JOIN query         [DONE]
+
+Playlists          -> NEXT
+PlaylistSongs      -> LATER
+History            -> LATER
+C++ + SQLite       -> LATER
+OS simulation      -> LATER
+GitHub             -> LATER
+
+When continuing the project, the Songs/Nikes record and the Genres/SongGenres tables are verified, so the next step is the Playlists and PlaylistSongs tables, then continue building the database one step at a time.
