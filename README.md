@@ -9,3 +9,19 @@ A music library management and operating system simulation project.
 - SQL
 - Git
 - GitHub
+
+
+
+
+
+
+
+
+
+
+Set-Location 'D:\PBL DBMS & OS\Museos'
+g++ .\src\main.cpp -o .\build\MuseOS-cli.exe -lsqlite3
+.\build\MuseOS-cli.exe
+
+
+Set-Location 'D:\PBL DBMS & OS\Museos'; .\build\bin\MuseOSFrontend.exe

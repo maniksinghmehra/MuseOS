@@ -238,22 +238,130 @@ void createPlaylist(sqlite3* db) {
     std::string name;
     readLine("Enter a name for the playlist: ", name);
 
-    sqlite3_stmt* stmt = nullptr;
-    int result = sqlite3_prepare_v2(
-        db, "INSERT INTO Playlists (name) VALUES (?);", -1, &stmt, nullptr);
-
-    if (result == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_TRANSIENT);
-        result = sqlite3_step(stmt);
+    if (name.empty()) {
+        std::cout << "Playlist name cannot be empty.\n";
+        return;
     }
 
-    if (result == SQLITE_DONE) {
-        std::cout << "Playlist created successfully.\n";
-    } else {
-        std::cerr << "Could not create playlist: " << sqlite3_errmsg(db) << '\n';
+    int songCount;
+    if (!readNumber("How many songs should be added now? ", songCount)) {
+        return;
     }
 
-    sqlite3_finalize(stmt);
+    if (songCount < 0 || songCount > 200) {
+        std::cout << "Enter a number from 0 to 200.\n";
+        return;
+    }
+
+    int result = sqlite3_exec(
+        db, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr
+    );
+
+    if (result != SQLITE_OK) {
+        std::cerr << "Could not start transaction: "
+                  << sqlite3_errmsg(db) << '\n';
+        return;
+    }
+
+    auto rollback = [db]() {
+        sqlite3_exec(db, "ROLLBACK;", nullptr, nullptr, nullptr);
+    };
+
+    sqlite3_stmt* playlistStmt = nullptr;
+    result = sqlite3_prepare_v2(
+        db,
+        "INSERT INTO Playlists (name) VALUES (?);",
+        -1,
+        &playlistStmt,
+        nullptr
+    );
+
+    if (result != SQLITE_OK) {
+        std::cerr << "Could not prepare playlist: "
+                  << sqlite3_errmsg(db) << '\n';
+        rollback();
+        return;
+    }
+
+    sqlite3_bind_text(
+        playlistStmt, 1, name.c_str(), -1, SQLITE_TRANSIENT
+    );
+    result = sqlite3_step(playlistStmt);
+    sqlite3_finalize(playlistStmt);
+
+    if (result != SQLITE_DONE) {
+        std::cerr << "Could not create playlist: "
+                  << sqlite3_errmsg(db) << '\n';
+        rollback();
+        return;
+    }
+
+    const int playlistId =
+        static_cast<int>(sqlite3_last_insert_rowid(db));
+
+    sqlite3_stmt* songStmt = nullptr;
+
+    if (songCount > 0) {
+        result = sqlite3_prepare_v2(
+            db,
+            "INSERT INTO PlaylistSongs "
+            "(playlist_id, song_id, position) VALUES (?, ?, ?);",
+            -1,
+            &songStmt,
+            nullptr
+        );
+
+        if (result != SQLITE_OK) {
+            std::cerr << "Could not prepare playlist songs: "
+                      << sqlite3_errmsg(db) << '\n';
+            rollback();
+            return;
+        }
+
+        for (int i = 0; i < songCount; ++i) {
+            int songId;
+            if (!readNumber("Enter a song ID from the song list: ", songId)) {
+                sqlite3_finalize(songStmt);
+                rollback();
+                std::cout << "Nothing was saved; transaction rolled back.\n";
+                return;
+            }
+
+            sqlite3_bind_int(songStmt, 1, playlistId);
+            sqlite3_bind_int(songStmt, 2, songId);
+            sqlite3_bind_int(songStmt, 3, i + 1);
+
+            result = sqlite3_step(songStmt);
+
+            if (result != SQLITE_DONE) {
+                std::cerr << "Could not add song "
+                          << songId << ": " << sqlite3_errmsg(db) << '\n';
+                sqlite3_finalize(songStmt);
+                rollback();
+                std::cout << "Nothing was saved; transaction rolled back.\n";
+                return;
+            }
+
+            sqlite3_reset(songStmt);
+            sqlite3_clear_bindings(songStmt);
+        }
+
+        sqlite3_finalize(songStmt);
+    }
+
+    result = sqlite3_exec(
+        db, "COMMIT;", nullptr, nullptr, nullptr
+    );
+
+    if (result != SQLITE_OK) {
+        std::cerr << "Could not commit playlist: "
+                  << sqlite3_errmsg(db) << '\n';
+        rollback();
+        return;
+    }
+
+    std::cout << "Playlist and " << songCount
+              << " song(s) saved successfully.\n";
 }
 
 void addSongToPlaylist(sqlite3* db) {
