@@ -40,7 +40,8 @@ QWidget* createTablePage(
     bool viewPlaylistSongs = false,
     bool recordListen = false,
     bool assignGenre = false,
-    bool exportSongs = false
+    bool exportSongs = false,
+    bool editArtist = false
 ) {
     auto* page = new QWidget;
     auto* layout = new QVBoxLayout(page);
@@ -579,6 +580,84 @@ QWidget* createTablePage(
         );
     }
 
+    if (editArtist) {
+        auto* editArtistButton =
+            new QPushButton("Edit selected artist");
+        layout->addWidget(editArtistButton);
+
+        QObject::connect(
+            editArtistButton,
+            &QPushButton::clicked,
+            page,
+            [table, proxyModel, model, database, page, reloadTable]() {
+                const QModelIndex selected = table->currentIndex();
+
+                if (!selected.isValid()) {
+                    QMessageBox::information(
+                        page,
+                        "Select an artist",
+                        "Click an artist row first."
+                    );
+                    return;
+                }
+
+                const QModelIndex source =
+                    proxyModel->mapToSource(selected);
+                const int artistId =
+                    model->data(model->index(source.row(), 0)).toInt();
+                const QString oldName =
+                    model->data(model->index(source.row(), 1)).toString();
+
+                bool accepted = false;
+                const QString newName = QInputDialog::getText(
+                    page,
+                    "Edit artist",
+                    "Artist name:",
+                    QLineEdit::Normal,
+                    oldName,
+                    &accepted
+                ).trimmed();
+
+                if (!accepted) {
+                    return;
+                }
+
+                if (newName.isEmpty()) {
+                    QMessageBox::warning(
+                        page,
+                        "Missing name",
+                        "Artist name cannot be empty."
+                    );
+                    return;
+                }
+
+                QSqlQuery update(database);
+                update.prepare(
+                    "UPDATE Artists SET name = ? WHERE artist_id = ?;"
+                );
+                update.addBindValue(newName);
+                update.addBindValue(artistId);
+
+                if (!update.exec()) {
+                    QMessageBox::warning(
+                        page,
+                        "Could not update artist",
+                        update.lastError().text()
+                    );
+                    return;
+                }
+
+                reloadTable();
+
+                QMessageBox::information(
+                    page,
+                    "Artist updated",
+                    "The artist was updated successfully."
+                );
+            }
+        );
+    }
+
     if (addToPlaylist) {
         auto* addSongButton =
             new QPushButton("Add song to selected playlist");
@@ -1090,7 +1169,18 @@ int main(int argc, char *argv[]) {
             "Add artist",
             "Add artist",
             "Artist name:",
-            "INSERT INTO Artists (name) VALUES (?);"
+            "INSERT INTO Artists (name) VALUES (?);",
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true
         ),
         "Artists"
     );
